@@ -28,12 +28,20 @@ jobs:
           echo "Latest tag: $tag"
           echo "tag=$tag" >> $GITHUB_OUTPUT
 
-      - name: Extract PR branch name
+      - name: Extract source branch from merge commit
         id: extract_branch
         run: |
-          ref="${GITHUB_HEAD_REF:-${GITHUB_REF##*/}}"
-          echo "Branch name: $ref"
-          echo "branch=$ref" >> $GITHUB_OUTPUT
+          msg=$(git log -1 --pretty=%B)
+          echo "Merge message: $msg"
+
+          if [[ "$msg" =~ from\ ([^/]+\/)?([^[:space:]]+) ]]; then
+            branch="${BASH_REMATCH[2]}"
+          else
+            branch="main"
+          fi
+
+          echo "Detected branch: $branch"
+          echo "branch=$branch" >> $GITHUB_OUTPUT
 
       - name: Determine bump type from branch name
         id: bump_type
